@@ -1,13 +1,4 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/leads/:path*',
-        destination: 'http://127.0.0.1:5000/:path*'
-      }
-    ];
-  }
-};
+const nextConfig = {};
 
 module.exports = nextConfig;

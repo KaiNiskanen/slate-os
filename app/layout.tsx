@@ -1,13 +1,12 @@
 import "./globals.css";
-import Link from "next/link";
 
 export const metadata = {
-  title: "Second Brain",
-  description: "Local-only second brain for notes, tasks, and review."
+  title: "Slate Novum – Leads",
+  description: "Outreach operations console for Slate.",
 };
 
 export default function RootLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
@@ -22,15 +21,9 @@ export default function RootLayout({
               </div>
               <div>
                 <h1>Slate OS</h1>
-                <p className="subtitle">Second Brain + Ops hub</p>
+                <p className="subtitle">Leads Tracker</p>
               </div>
             </div>
-            <nav className="topnav">
-              <Link href="/">Hub</Link>
-              <Link href="/brain">Second Brain</Link>
-              <Link href="/leads">Leads</Link>
-              <Link href="/dashboard">Dashboard</Link>
-            </nav>
           </header>
           {children}
         </div>
