@@ -7,14 +7,10 @@
    ────────────────────────────────────────────── */
 
 import { revalidatePath } from "next/cache";
+import { normalizeContact } from "../../lib/openclaw/normalize";
 import { supabase } from "../../lib/supabase";
 import type { StatusValue, EventType } from "../../lib/types";
 import { STATUS_OPTIONS } from "../../lib/constants";
-
-/** Normalize an IG handle to the dedup key: lowercase, strip @, trim */
-function normalizeContact(raw: string): string {
-  return raw.toLowerCase().replace(/^@/, "").trim();
-}
 
 /** Insert a row into lead_events */
 async function logEvent(

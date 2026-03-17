@@ -18,6 +18,7 @@ export type EventType =
   | "call"
   | "closed"
   | "lost"
+  | "contact_updated"
   | "note_updated"
   | "followup_set";
 
@@ -31,8 +32,10 @@ export interface Lead {
   contact_norm: string;
   status: StatusValue;
   email: string | null;
+  email_norm?: string | null;
   niche: string | null;
   website_url: string | null;
+  website_domain_norm?: string | null;
   notes: string | null;
   next_followup: string | null; // date string YYYY-MM-DD
   source: SourceValue;
@@ -45,6 +48,7 @@ export interface LeadEvent {
   id: string;
   lead_id: string;
   event_type: EventType;
+  actor_type?: "user" | "openclaw" | "system";
   created_at: string;
   payload_json: Record<string, unknown>;
 }
