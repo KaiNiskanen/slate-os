@@ -33,16 +33,7 @@ export default async function LeadsPage({
   const weekStart = getWeekStart();
 
   /* ── Fetch leads ─────────────────────────────── */
-  let leadsQuery = supabase
-    .from("leads")
-    .select("*")
-    .order("updated_at", { ascending: false });
-
-  // Apply status filter (or overdue filter) server-side
-  if (filterStatus && filterStatus !== "overdue") {
-    leadsQuery = leadsQuery.eq("status", filterStatus);
-  }
-
+  // Fetch the full list once; the current page still applies status and search filters in memory.
   const { data: allLeadsRaw } = await supabase
     .from("leads")
     .select("*")

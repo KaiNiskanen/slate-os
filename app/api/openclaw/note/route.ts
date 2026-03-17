@@ -5,6 +5,7 @@
    ────────────────────────────────────────────── */
 
 import type { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { validateOpenClawRequest } from "../../../../lib/openclaw/auth";
 import { err, ok } from "../../../../lib/openclaw/respond";
@@ -68,6 +69,9 @@ export async function POST(request: NextRequest) {
     if (eventError) {
       return err(eventError.message, 500);
     }
+
+    // Refresh the leads page so appended OpenClaw notes show up right away.
+    revalidatePath("/leads");
 
     return ok({ ok: true, lead_id: leadId });
   } catch {

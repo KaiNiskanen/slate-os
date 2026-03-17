@@ -5,6 +5,7 @@
    ────────────────────────────────────────────── */
 
 import type { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { STATUS_OPTIONS } from "../../../../lib/constants";
 import { validateOpenClawRequest } from "../../../../lib/openclaw/auth";
@@ -192,6 +193,9 @@ export async function PATCH(request: NextRequest) {
         return err(eventError.message, 500);
       }
     }
+
+    // Refresh the leads page so successful OpenClaw updates appear immediately.
+    revalidatePath("/leads");
 
     return ok({
       ok: true,

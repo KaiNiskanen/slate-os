@@ -5,6 +5,7 @@
    ────────────────────────────────────────────── */
 
 import type { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 
 import { validateOpenClawRequest } from "../../../../lib/openclaw/auth";
 import { err, ok } from "../../../../lib/openclaw/respond";
@@ -55,6 +56,9 @@ export async function POST(request: NextRequest) {
     if (!result) {
       return err("Create lead RPC returned no result.", 500);
     }
+
+    // Refresh the leads page so successful OpenClaw inserts appear immediately.
+    revalidatePath("/leads");
 
     return ok({
       status: result.status,
