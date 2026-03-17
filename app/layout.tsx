@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
+
 import "./globals.css";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Slate Novum – Leads",
   description: "Outreach operations console for Slate.",
+  // Reuse the existing brand asset so the browser tab shows the Slate logo.
+  icons: {
+    icon: "/logo.svg",
+    apple: "/logo.svg",
+  },
 };
 
 export default function RootLayout({
