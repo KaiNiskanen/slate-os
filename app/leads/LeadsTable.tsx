@@ -19,6 +19,7 @@ export default function LeadsTable({ leads }: LeadsTableProps) {
       {/* Column headers -- visible on desktop only */}
       <div className={styles.tableHeader}>
         <div>Company</div>
+        <div>Email</div>
         <div>Status</div>
         <div>Niche</div>
         <div>Follow-up</div>

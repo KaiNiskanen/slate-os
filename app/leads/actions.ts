@@ -121,6 +121,30 @@ export async function updateNotes(leadId: string, notes: string) {
   return { error: null };
 }
 
+/* ── Log email outreach ───────────────────────── */
+
+export async function logEmailSent(leadId: string) {
+  if (!leadId) {
+    return { error: "Lead ID is required." };
+  }
+
+  // Keep email tracking separate from the main lead status funnel.
+  await logEvent(leadId, "email_sent", { channel: "email" });
+  revalidatePath("/leads");
+  return { error: null };
+}
+
+export async function logEmailReply(leadId: string) {
+  if (!leadId) {
+    return { error: "Lead ID is required." };
+  }
+
+  // Log email replies as their own event so channel performance stays measurable.
+  await logEvent(leadId, "email_replied", { channel: "email" });
+  revalidatePath("/leads");
+  return { error: null };
+}
+
 /* ── Update Instagram handle ──────────────────── */
 
 export async function updateContact(leadId: string, contact: string) {

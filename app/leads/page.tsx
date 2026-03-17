@@ -63,6 +63,7 @@ export default async function LeadsPage({
       const searchableFields = [
         lead.company,
         lead.contact,
+        lead.email,
         lead.niche,
         lead.notes,
         lead.website_url,
@@ -92,6 +93,8 @@ export default async function LeadsPage({
 
   const dmSent = distinctByType("dm_sent");
   const replied = distinctByType("replied");
+  const emailSent = distinctByType("email_sent");
+  const emailReplied = distinctByType("email_replied");
   const call = distinctByType("call");
   const closed = distinctByType("closed");
 
@@ -122,6 +125,8 @@ export default async function LeadsPage({
     newCount,
     dmSent,
     replied,
+    emailSent,
+    emailReplied,
     call,
     closed,
     lost: lostCount,
@@ -129,6 +134,7 @@ export default async function LeadsPage({
     followupsDue,
     thisWeekDms,
     replyRate: safeDiv(replied, dmSent),
+    emailReplyRate: safeDiv(emailReplied, emailSent),
     callRate: safeDiv(call, replied),
     closeRate: safeDiv(closed, call),
   };

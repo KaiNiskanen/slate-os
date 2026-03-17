@@ -3,7 +3,14 @@
 import { useState, useRef, useTransition, useCallback, useEffect } from "react";
 import type { Lead, StatusValue } from "../../lib/types";
 import { STATUS_OPTIONS, STATUS_LABELS } from "../../lib/constants";
-import { updateStatus, updateNotes, updateContact, deleteLead } from "./actions";
+import {
+  updateStatus,
+  updateNotes,
+  updateContact,
+  deleteLead,
+  logEmailSent,
+  logEmailReply,
+} from "./actions";
 import FollowUpActions from "./FollowUpActions";
 import styles from "./leads.module.css";
 
@@ -67,6 +74,7 @@ export default function LeadRow({ lead }: LeadRowProps) {
   const [contactError, setContactError] = useState<string | null>(null);
   const [savedContact, setSavedContact] = useState(lead.contact);
   const igUrl = buildIgUrl(contact);
+  const [emailEventError, setEmailEventError] = useState<string | null>(null);
 
   // Keep local state aligned if the row re-renders with fresh data from the server.
   useEffect(() => {
@@ -139,6 +147,20 @@ export default function LeadRow({ lead }: LeadRowProps) {
     });
   };
 
+  const handleEmailEvent = useCallback(
+    (eventType: "sent" | "replied") => {
+      startTransition(async () => {
+        const result =
+          eventType === "sent"
+            ? await logEmailSent(lead.id)
+            : await logEmailReply(lead.id);
+
+        setEmailEventError(result?.error ?? null);
+      });
+    },
+    [lead.id, startTransition]
+  );
+
   return (
     <div
       className={`${styles.row} ${overdue ? styles.rowOverdue : ""}`}
@@ -158,6 +180,39 @@ export default function LeadRow({ lead }: LeadRowProps) {
         />
         {contactError ? (
           <div className={styles.inlineError}>{contactError}</div>
+        ) : null}
+      </div>
+
+      {/* Email + lightweight email event logging */}
+      <div>
+        {lead.email ? (
+          <>
+            <a className={styles.emailLink} href={`mailto:${lead.email}`}>
+              {lead.email}
+            </a>
+            <div className={styles.emailActions}>
+              {/* These buttons keep email tracking lightweight and manual for now. */}
+              <button
+                type="button"
+                className={styles.emailEventBtn}
+                onClick={() => handleEmailEvent("sent")}
+              >
+                Email Sent
+              </button>
+              <button
+                type="button"
+                className={styles.emailEventBtn}
+                onClick={() => handleEmailEvent("replied")}
+              >
+                Email Reply
+              </button>
+            </div>
+          </>
+        ) : (
+          <span className={styles.emailEmpty}>—</span>
+        )}
+        {emailEventError ? (
+          <div className={styles.inlineError}>{emailEventError}</div>
         ) : null}
       </div>
 

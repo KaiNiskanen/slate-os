@@ -15,6 +15,8 @@ export type EventType =
   | "created"
   | "dm_sent"
   | "replied"
+  | "email_sent"
+  | "email_replied"
   | "call"
   | "closed"
   | "lost"
@@ -58,6 +60,8 @@ export interface TopStats {
   newCount: number;
   dmSent: number;
   replied: number;
+  emailSent: number;
+  emailReplied: number;
   call: number;
   closed: number;
   lost: number;
@@ -65,6 +69,7 @@ export interface TopStats {
   followupsDue: number;
   thisWeekDms: number;
   replyRate: number;
+  emailReplyRate: number;
   callRate: number;
   closeRate: number;
 }
