@@ -22,6 +22,47 @@ function safeDiv(numerator: number, denominator: number): number {
   return denominator > 0 ? numerator / denominator : 0;
 }
 
+/** Counts distinct leads for one event type without relying on a single truncated API response. */
+async function countDistinctLeadIdsForEvent(
+  eventType: string,
+  options?: { createdAfter?: string }
+): Promise<number> {
+  const batchSize = 1000;
+  const leadIds = new Set<string>();
+  let from = 0;
+
+  while (true) {
+    let query = supabase
+      .from("lead_events")
+      .select("lead_id")
+      .eq("event_type", eventType)
+      .range(from, from + batchSize - 1);
+
+    // Reuse the helper for time-bounded metrics like this week's DM count.
+    if (options?.createdAfter) {
+      query = query.gte("created_at", options.createdAfter);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to load ${eventType} stats: ${error.message}`);
+    }
+
+    const rows = data ?? [];
+
+    for (const row of rows as { lead_id: string }[]) {
+      leadIds.add(row.lead_id);
+    }
+
+    if (rows.length < batchSize) {
+      return leadIds.size;
+    }
+
+    from += batchSize;
+  }
+}
+
 export default async function LeadsPage({
   searchParams,
 }: {
@@ -76,37 +117,25 @@ export default async function LeadsPage({
   }
 
   /* ── Fetch event counts for funnel stats ─────── */
-  const { data: eventsRaw } = await supabase
-    .from("lead_events")
-    .select("event_type, lead_id");
-
-  const events = eventsRaw ?? [];
-
-  // Count distinct leads per event type
-  const distinctByType = (type: string): number => {
-    const ids = new Set<string>();
-    for (const e of events) {
-      if (e.event_type === type) ids.add(e.lead_id);
-    }
-    return ids.size;
-  };
-
-  const dmSent = distinctByType("dm_sent");
-  const replied = distinctByType("replied");
-  const emailSent = distinctByType("email_sent");
-  const emailReplied = distinctByType("email_replied");
-  const call = distinctByType("call");
-  const closed = distinctByType("closed");
-
-  /* ── This-week DMs from events ───────────────── */
-  const { data: weekDmsRaw } = await supabase
-    .from("lead_events")
-    .select("lead_id")
-    .eq("event_type", "dm_sent")
-    .gte("created_at", `${weekStart}T00:00:00`);
-
-  const weekDmIds = new Set((weekDmsRaw ?? []).map((e: { lead_id: string }) => e.lead_id));
-  const thisWeekDms = weekDmIds.size;
+  const [
+    dmSent,
+    replied,
+    emailSent,
+    emailReplied,
+    call,
+    closed,
+    thisWeekDms,
+  ] = await Promise.all([
+    countDistinctLeadIdsForEvent("dm_sent"),
+    countDistinctLeadIdsForEvent("replied"),
+    countDistinctLeadIdsForEvent("email_sent"),
+    countDistinctLeadIdsForEvent("email_replied"),
+    countDistinctLeadIdsForEvent("call"),
+    countDistinctLeadIdsForEvent("closed"),
+    countDistinctLeadIdsForEvent("dm_sent", {
+      createdAfter: `${weekStart}T00:00:00`,
+    }),
+  ]);
 
   /* ── Compute current-state counts from leads ─── */
   const newCount = allLeads.filter((l) => l.status === "new").length;
