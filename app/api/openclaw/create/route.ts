@@ -17,7 +17,24 @@ interface CreateLeadBody {
   email?: string | null;
   niche?: string | null;
   website_url?: string | null;
+  websiteUrl?: string | null;
+  website?: string | null;
+  site?: string | null;
+  url?: string | null;
   notes?: string | null;
+}
+
+/** Returns the first non-empty trimmed string from a list of aliases. */
+function pickFirstFilledValue(...values: Array<string | null | undefined>) {
+  for (const value of values) {
+    const trimmed = value?.trim();
+
+    if (trimmed) {
+      return trimmed;
+    }
+  }
+
+  return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -31,6 +48,14 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as CreateLeadBody;
     const company = body.company?.trim();
     const contact = body.contact?.trim();
+    // Accept the legacy and agent-friendly aliases OpenClaw may send.
+    const websiteUrl = pickFirstFilledValue(
+      body.website_url,
+      body.websiteUrl,
+      body.website,
+      body.site,
+      body.url
+    );
 
     if (!company || !contact) {
       return err("Company and contact are required.", 400);
@@ -42,7 +67,7 @@ export async function POST(request: NextRequest) {
       p_contact: contact,
       p_email: body.email?.trim() || null,
       p_niche: body.niche?.trim() || null,
-      p_website_url: body.website_url?.trim() || null,
+      p_website_url: websiteUrl,
       p_notes: body.notes?.trim() || null,
       p_source: "openclaw",
     });
