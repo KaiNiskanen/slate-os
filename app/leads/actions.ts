@@ -56,6 +56,8 @@ export async function addLead(formData: FormData) {
       contact_norm: contactNorm,
       status: "new" as StatusValue,
       email: (formData.get("email") as string)?.trim() || null,
+      // Store phone as free text for now to avoid blocking valid international formats.
+      phone: (formData.get("phone") as string)?.trim() || null,
       niche: (formData.get("niche") as string)?.trim() || null,
       website_url: (formData.get("website_url") as string)?.trim() || null,
       notes: (formData.get("notes") as string)?.trim() || null,

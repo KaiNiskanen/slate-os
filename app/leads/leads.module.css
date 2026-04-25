@@ -185,6 +185,18 @@
   color: var(--text);
 }
 
+.phoneLink {
+  display: inline-block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.phoneLink:hover {
+  color: var(--text);
+}
+
 .emailEmpty {
   color: var(--muted-2);
   font-size: 12px;

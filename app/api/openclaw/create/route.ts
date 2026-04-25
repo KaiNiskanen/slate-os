@@ -15,6 +15,8 @@ interface CreateLeadBody {
   company?: string;
   contact?: string;
   email?: string | null;
+  phone?: string | null;
+  phoneNumber?: string | null;
   niche?: string | null;
   website_url?: string | null;
   websiteUrl?: string | null;
@@ -48,6 +50,8 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as CreateLeadBody;
     const company = body.company?.trim();
     const contact = body.contact?.trim();
+    // Accept the likely aliases OpenClaw tools may send for phone.
+    const phone = pickFirstFilledValue(body.phone, body.phoneNumber);
     // Accept the legacy and agent-friendly aliases OpenClaw may send.
     const websiteUrl = pickFirstFilledValue(
       body.website_url,
@@ -66,6 +70,7 @@ export async function POST(request: NextRequest) {
       p_company: company,
       p_contact: contact,
       p_email: body.email?.trim() || null,
+      p_phone: phone,
       p_niche: body.niche?.trim() || null,
       p_website_url: websiteUrl,
       p_notes: body.notes?.trim() || null,

@@ -105,6 +105,7 @@ export default async function LeadsPage({
         lead.company,
         lead.contact,
         lead.email,
+        lead.phone,
         lead.niche,
         lead.notes,
         lead.website_url,

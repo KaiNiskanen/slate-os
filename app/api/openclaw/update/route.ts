@@ -24,6 +24,7 @@ interface UpdateLeadBody {
   next_followup?: string | null;
   niche?: string | null;
   email?: string | null;
+  phone?: string | null;
   website_url?: string | null;
   notes?: string | null;
   contact?: string | null;
@@ -57,7 +58,7 @@ export async function PATCH(request: NextRequest) {
     const adminClient = getAdminClient();
     const { data: currentLead, error: currentLeadError } = await adminClient
       .from("leads")
-      .select("id, status, contact, next_followup, notes, email, niche, website_url")
+      .select("id, status, contact, next_followup, notes, email, phone, niche, website_url")
       .eq("id", leadId)
       .single();
 
@@ -83,6 +84,11 @@ export async function PATCH(request: NextRequest) {
       const email = body.email?.trim() || null;
       updates.email = email;
       updates.email_norm = email ? normalizeEmail(email) : null;
+    }
+
+    if (hasField(body, "phone")) {
+      // Store phone as provided so international/local formatting is preserved.
+      updates.phone = body.phone?.trim() || null;
     }
 
     if (hasField(body, "website_url")) {

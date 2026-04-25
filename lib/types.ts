@@ -34,6 +34,7 @@ export interface Lead {
   contact_norm: string;
   status: StatusValue;
   email: string | null;
+  phone: string | null;
   email_norm?: string | null;
   niche: string | null;
   website_url: string | null;

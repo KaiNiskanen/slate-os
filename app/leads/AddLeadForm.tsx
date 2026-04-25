@@ -41,6 +41,8 @@ export default function AddLeadForm({
           <input name="company" placeholder="Company *" required />
           <input name="contact" placeholder="@handle *" required />
           <input name="email" placeholder="Email" />
+          {/* Keep phone optional so existing lead creation flow remains unchanged. */}
+          <input name="phone" placeholder="Phone" />
           <input name="niche" placeholder="Niche" />
           <input name="website_url" placeholder="Website URL" />
           <input name="notes" placeholder="Notes" />

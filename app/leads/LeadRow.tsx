@@ -211,6 +211,11 @@ export default function LeadRow({ lead }: LeadRowProps) {
         ) : (
           <span className={styles.emailEmpty}>—</span>
         )}
+        {lead.phone ? (
+          <a className={styles.phoneLink} href={`tel:${lead.phone}`}>
+            {lead.phone}
+          </a>
+        ) : null}
         {emailEventError ? (
           <div className={styles.inlineError}>{emailEventError}</div>
         ) : null}
