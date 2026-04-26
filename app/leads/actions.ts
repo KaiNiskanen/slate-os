@@ -7,7 +7,7 @@
    ────────────────────────────────────────────── */
 
 import { revalidatePath } from "next/cache";
-import { normalizeContact } from "../../lib/openclaw/normalize";
+import { normalizeContact, normalizeEmail } from "../../lib/openclaw/normalize";
 import { supabase } from "../../lib/supabase";
 import type { StatusValue, EventType } from "../../lib/types";
 import { STATUS_OPTIONS } from "../../lib/constants";
@@ -145,6 +145,29 @@ export async function logEmailReply(leadId: string) {
   await logEvent(leadId, "email_replied", { channel: "email" });
   revalidatePath("/leads");
   return { error: null };
+}
+
+/* ── Update email ─────────────────────────────── */
+
+export async function updateEmail(leadId: string, email: string) {
+  const trimmedEmail = email.trim();
+  const nextEmail = trimmedEmail || null;
+
+  // Keep email optional but maintain the normalized index companion when present.
+  const { error } = await supabase
+    .from("leads")
+    .update({
+      email: nextEmail,
+      email_norm: nextEmail ? normalizeEmail(nextEmail) : null,
+    })
+    .eq("id", leadId);
+
+  if (error) {
+    return { error: error.message, email: null };
+  }
+
+  revalidatePath("/leads");
+  return { error: null, email: nextEmail };
 }
 
 /* ── Update Instagram handle ──────────────────── */

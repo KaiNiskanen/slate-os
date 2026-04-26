@@ -6,6 +6,7 @@ import { STATUS_OPTIONS, STATUS_LABELS } from "../../lib/constants";
 import {
   updateStatus,
   updateNotes,
+  updateEmail,
   updateContact,
   updatePhone,
   deleteLead,
@@ -74,6 +75,9 @@ export default function LeadRow({ lead }: LeadRowProps) {
   const [contact, setContact] = useState(lead.contact);
   const [contactError, setContactError] = useState<string | null>(null);
   const [savedContact, setSavedContact] = useState(lead.contact);
+  const [email, setEmail] = useState(lead.email ?? "");
+  const [savedEmail, setSavedEmail] = useState(lead.email ?? "");
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [phone, setPhone] = useState(lead.phone ?? "");
   const [savedPhone, setSavedPhone] = useState(lead.phone ?? "");
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -86,6 +90,13 @@ export default function LeadRow({ lead }: LeadRowProps) {
     setSavedContact(lead.contact);
     setContactError(null);
   }, [lead.contact]);
+
+  // Keep email input aligned with server data after refreshes/revalidations.
+  useEffect(() => {
+    setEmail(lead.email ?? "");
+    setSavedEmail(lead.email ?? "");
+    setEmailError(null);
+  }, [lead.email]);
 
   // Keep phone input aligned with server data after refreshes/revalidations.
   useEffect(() => {
@@ -146,6 +157,52 @@ export default function LeadRow({ lead }: LeadRowProps) {
       e.preventDefault();
       setContact(savedContact);
       setContactError(null);
+      e.currentTarget.blur();
+    }
+  };
+
+  const saveEmail = useCallback(() => {
+    const nextEmail = email.trim();
+
+    // Skip no-op writes when the value has not changed.
+    if (nextEmail === savedEmail.trim()) {
+      setEmailError(null);
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await updateEmail(lead.id, nextEmail);
+
+      if (result?.error) {
+        setEmail(savedEmail);
+        setEmailError(result.error);
+        return;
+      }
+
+      setSavedEmail(result?.email ?? "");
+      setEmail(result?.email ?? "");
+      setEmailError(null);
+    });
+  }, [email, lead.id, savedEmail, startTransition]);
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    if (emailError) {
+      setEmailError(null);
+    }
+  };
+
+  const handleEmailKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      saveEmail();
+      e.currentTarget.blur();
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setEmail(savedEmail);
+      setEmailError(null);
       e.currentTarget.blur();
     }
   };
@@ -242,32 +299,40 @@ export default function LeadRow({ lead }: LeadRowProps) {
 
       {/* Email + lightweight email event logging */}
       <div>
-        {lead.email ? (
-          <>
-            <a className={styles.emailLink} href={`mailto:${lead.email}`}>
-              {lead.email}
-            </a>
-            <div className={styles.emailActions}>
-              {/* These buttons keep email tracking lightweight and manual for now. */}
-              <button
-                type="button"
-                className={styles.emailEventBtn}
-                onClick={() => handleEmailEvent("sent")}
-              >
-                Email Sent
-              </button>
-              <button
-                type="button"
-                className={styles.emailEventBtn}
-                onClick={() => handleEmailEvent("replied")}
-              >
-                Email Reply
-              </button>
-            </div>
-          </>
+        <input
+          className={styles.emailInput}
+          value={email}
+          onChange={handleEmailChange}
+          onBlur={saveEmail}
+          onKeyDown={handleEmailKeyDown}
+          placeholder="Email"
+          aria-label={`Email address for ${lead.company}`}
+        />
+        {email ? (
+          <a className={styles.emailLink} href={`mailto:${email}`}>
+            Open email
+          </a>
         ) : (
           <span className={styles.emailEmpty}>—</span>
         )}
+        <div className={styles.emailActions}>
+          {/* These buttons keep email tracking lightweight and manual for now. */}
+          <button
+            type="button"
+            className={styles.emailEventBtn}
+            onClick={() => handleEmailEvent("sent")}
+          >
+            Email Sent
+          </button>
+          <button
+            type="button"
+            className={styles.emailEventBtn}
+            onClick={() => handleEmailEvent("replied")}
+          >
+            Email Reply
+          </button>
+        </div>
+        {emailError ? <div className={styles.inlineError}>{emailError}</div> : null}
         <input
           className={styles.phoneInput}
           value={phone}

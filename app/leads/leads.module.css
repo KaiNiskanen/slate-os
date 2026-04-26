@@ -175,6 +175,7 @@
 
 .emailLink {
   display: inline-block;
+  margin-top: 6px;
   color: var(--accent-2);
   font-size: 12px;
   text-decoration: none;
@@ -183,6 +184,23 @@
 
 .emailLink:hover {
   color: var(--text);
+}
+
+.emailInput {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  width: 100%;
+  transition: border-color 80ms ease;
+}
+
+.emailInput:focus {
+  border-color: var(--border-2);
+  color: var(--text);
+  outline: none;
 }
 
 .phoneLink {
