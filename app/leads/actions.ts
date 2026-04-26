@@ -186,6 +186,26 @@ export async function updateContact(leadId: string, contact: string) {
   return { error: null, contact: trimmedContact };
 }
 
+/* ── Update phone ─────────────────────────────── */
+
+export async function updatePhone(leadId: string, phone: string) {
+  const trimmedPhone = phone.trim();
+  const nextPhone = trimmedPhone || null;
+
+  // Keep phone optional so existing leads can have no number.
+  const { error } = await supabase
+    .from("leads")
+    .update({ phone: nextPhone })
+    .eq("id", leadId);
+
+  if (error) {
+    return { error: error.message, phone: null };
+  }
+
+  revalidatePath("/leads");
+  return { error: null, phone: nextPhone };
+}
+
 /* ── Delete lead ───────────────────────────────── */
 
 export async function deleteLead(leadId: string) {

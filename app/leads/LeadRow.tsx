@@ -7,6 +7,7 @@ import {
   updateStatus,
   updateNotes,
   updateContact,
+  updatePhone,
   deleteLead,
   logEmailSent,
   logEmailReply,
@@ -73,6 +74,9 @@ export default function LeadRow({ lead }: LeadRowProps) {
   const [contact, setContact] = useState(lead.contact);
   const [contactError, setContactError] = useState<string | null>(null);
   const [savedContact, setSavedContact] = useState(lead.contact);
+  const [phone, setPhone] = useState(lead.phone ?? "");
+  const [savedPhone, setSavedPhone] = useState(lead.phone ?? "");
+  const [phoneError, setPhoneError] = useState<string | null>(null);
   const igUrl = buildIgUrl(contact);
   const [emailEventError, setEmailEventError] = useState<string | null>(null);
 
@@ -82,6 +86,13 @@ export default function LeadRow({ lead }: LeadRowProps) {
     setSavedContact(lead.contact);
     setContactError(null);
   }, [lead.contact]);
+
+  // Keep phone input aligned with server data after refreshes/revalidations.
+  useEffect(() => {
+    setPhone(lead.phone ?? "");
+    setSavedPhone(lead.phone ?? "");
+    setPhoneError(null);
+  }, [lead.phone]);
 
   const saveContact = useCallback(() => {
     const nextContact = contact.trim();
@@ -135,6 +146,52 @@ export default function LeadRow({ lead }: LeadRowProps) {
       e.preventDefault();
       setContact(savedContact);
       setContactError(null);
+      e.currentTarget.blur();
+    }
+  };
+
+  const savePhone = useCallback(() => {
+    const nextPhone = phone.trim();
+
+    // Skip no-op writes when the value has not changed.
+    if (nextPhone === savedPhone.trim()) {
+      setPhoneError(null);
+      return;
+    }
+
+    startTransition(async () => {
+      const result = await updatePhone(lead.id, nextPhone);
+
+      if (result?.error) {
+        setPhone(savedPhone);
+        setPhoneError(result.error);
+        return;
+      }
+
+      setSavedPhone(result?.phone ?? "");
+      setPhone(result?.phone ?? "");
+      setPhoneError(null);
+    });
+  }, [lead.id, phone, savedPhone, startTransition]);
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(e.target.value);
+    if (phoneError) {
+      setPhoneError(null);
+    }
+  };
+
+  const handlePhoneKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      savePhone();
+      e.currentTarget.blur();
+    }
+
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setPhone(savedPhone);
+      setPhoneError(null);
       e.currentTarget.blur();
     }
   };
@@ -211,11 +268,21 @@ export default function LeadRow({ lead }: LeadRowProps) {
         ) : (
           <span className={styles.emailEmpty}>—</span>
         )}
-        {lead.phone ? (
-          <a className={styles.phoneLink} href={`tel:${lead.phone}`}>
-            {lead.phone}
+        <input
+          className={styles.phoneInput}
+          value={phone}
+          onChange={handlePhoneChange}
+          onBlur={savePhone}
+          onKeyDown={handlePhoneKeyDown}
+          placeholder="Phone"
+          aria-label={`Phone number for ${lead.company}`}
+        />
+        {phone ? (
+          <a className={styles.phoneLink} href={`tel:${phone}`}>
+            Call
           </a>
         ) : null}
+        {phoneError ? <div className={styles.inlineError}>{phoneError}</div> : null}
         {emailEventError ? (
           <div className={styles.inlineError}>{emailEventError}</div>
         ) : null}

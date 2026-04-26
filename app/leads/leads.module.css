@@ -197,6 +197,24 @@
   color: var(--text);
 }
 
+.phoneInput {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  width: 100%;
+  margin-top: 6px;
+  transition: border-color 80ms ease;
+}
+
+.phoneInput:focus {
+  border-color: var(--border-2);
+  color: var(--text);
+  outline: none;
+}
+
 .emailEmpty {
   color: var(--muted-2);
   font-size: 12px;
